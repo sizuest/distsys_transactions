@@ -169,39 +169,40 @@ class HandledError(Exception):
 class ERPSimple(WMS):
 
     def do_transfer(self, source: Stock, target: Stock, amount):
-        target.put(amount)
-        source.pick(amount)
+        # TODO: Implement functions to realize a transfer of goods
+        pass
 
     def do_incoming(self, target, amount):
-        target.put(amount)
+        # TODO: Implement a check-in of incoming goods
+        pass
 
     def do_outgoing(self, source, amount):
-        source.pick(amount)
+        # TODO: Implement a check-out of outgoing goods
+        pass
 
 
 # Simples WMS with transactions
 class ERPTransactions(WMS):
     def do_transfer(self, source: Stock, target: Stock, amount):
         try:
-            target.put(amount)
-            source.pick(amount)
-            transaction.commit()
+            # TODO: Implement functions to realize a transfer of goods and a commit of the transactions upon success
+            pass
         except Exception as error:
-            transaction.abort()
+            # TODO: Implement an abort of the transactions upon success
             raise HandledError(error.args[0])
 
     def do_incoming(self, target, amount):
         try:
-            target.put(amount)
-            transaction.commit()
+            # TODO: Implement a check-in of incoming goods and a commit of the transactions upon success
+            pass
         except Exception as error:
-            transaction.abort()
+            # TODO: Implement an abort of the transactions upon success
             raise HandledError(error.args[0])
 
     def do_outgoing(self, source, amount):
         try:
-            source.pick(amount)
-            transaction.commit()
+            # TODO: Implement a check-out of outgoing goods and a commit of the transactions upon success
+            pass
         except Exception as error:
-            transaction.abort()
+            # TODO: Implement an abort of the transactions upon success
             raise HandledError(error.args[0])
