@@ -31,7 +31,6 @@ class WMS(ABC):
         except HandledError as error:
             print("SUPPRESSED: " + error.args[0])
 
-
     @abstractmethod
     def do_transfer(self, source: Stock, target: Stock, amount):
         pass
@@ -52,7 +51,6 @@ class WMS(ABC):
             print("ERROR: " + error.args[0])
         except HandledError as error:
             print("SUPPRESSED: " + error.args[0])
-
 
     @abstractmethod
     def do_incoming(self, target, amount):
@@ -116,7 +114,7 @@ class WMS(ABC):
     def get_incoming(self):
         return self.dm['total_incoming']
 
-    # RANDOM SELECION OF ACTIONS --------------------------------------------------------------------------------------
+    # RANDOM SELECTION OF ACTIONS -------------------------------------------------------------------------------------
     def get_random_place(self, exclude=None):
         wh = random.choice(self.warehouses)
         while wh is exclude:
@@ -167,7 +165,7 @@ class HandledError(Exception):
     pass
 
 
-# Einfaches WMS ohne Transaktionen
+# Simple WMS without transactions
 class ERPSimple(WMS):
 
     def do_transfer(self, source: Stock, target: Stock, amount):
@@ -181,7 +179,7 @@ class ERPSimple(WMS):
         source.pick(amount)
 
 
-# Einfaches WMS mit Transaktionen
+# Simples WMS with transactions
 class ERPTransactions(WMS):
     def do_transfer(self, source: Stock, target: Stock, amount):
         try:
