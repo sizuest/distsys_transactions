@@ -1,6 +1,6 @@
 from random import random
 
-ERROR_PROBABILITY = 0.25
+ERROR_PROBABILITY = 0.1
 
 
 class Warehouse:
@@ -34,27 +34,44 @@ class Stock:
         return self.dm[self.pos_name]
 
     def put(self, c):
-        if ERROR_PROBABILITY < random():
-            raise Exception(self.pos_name + ': ' + 'Unknown error!')
+        if ERROR_PROBABILITY > random():
+            raise GeneralError(self.pos_name + ': ' + 'Unknown error!')
 
         # Check, if space is available
         if self.dm[self.pos_name] + c > self.max_content:
-            raise Exception(self.pos_name + ': ' + 'Space not available, available=' +
-                            str(self.max_content-self.dm[self.pos_name]) +
-                            ', required ' + str(c) + '!')
+            raise SpaceNotAvailableError(self.pos_name + ': ' + 'Space not available, available ' +
+                                         str(self.max_content - self.dm[self.pos_name]) +
+                                         ', required ' + str(c) + '!')
 
         self.dm[self.pos_name] = self.dm[self.pos_name] + c
 
     def pick(self, c):
-        if ERROR_PROBABILITY < random():
-            raise Exception(self.pos_name + ': ' + 'Unknown error!')
+        if ERROR_PROBABILITY > random():
+            raise GeneralError(self.pos_name + ': ' + 'Unknown error!')
 
         # Check, if material is available
         if self.dm[self.pos_name] < c:
-            raise Exception(self.pos_name + ': ' + 'Material not available, available=' + str(self.dm[self.pos_name]) +
-                            ', required ' + str(c) + '!')
+            raise MaterialNotAvailableError(
+                self.pos_name + ': ' + 'Material not available, available ' + str(self.dm[self.pos_name]) +
+                ', required ' + str(c) + '!')
 
         self.dm[self.pos_name] = self.dm[self.pos_name] - c
 
     def get_name(self):
         return self.pos_name
+
+
+class Error(Exception):
+    pass
+
+
+class MaterialNotAvailableError(Error):
+    pass
+
+
+class SpaceNotAvailableError(Error):
+    pass
+
+
+class GeneralError(Error):
+    pass
