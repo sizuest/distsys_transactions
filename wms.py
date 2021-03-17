@@ -1,15 +1,18 @@
 import random
-from warehouse import MaterialNotAvailableError, SpaceNotAvailableError, GeneralError
+from warehouse import MaterialNotAvailableError, SpaceNotAvailableError, GeneralError, NotImplementedError
 from warehouse import Stock, Warehouse
 import transaction
 from transaction.tests import savepointsample
 from abc import ABC, abstractmethod
+from threading import Lock
 
 
 class WMS(ABC):
 
-    def __init__(self, wh_number, pos_number):
+    def __init__(self, wh_number, pos_number, debug=False):
         random.seed(0)
+
+        self.debug = debug
 
         self.dm = savepointsample.SampleSavepointDataManager()
         transaction.abort()
@@ -19,17 +22,23 @@ class WMS(ABC):
         self.warehouses = self.create_warehouses(wh_number, pos_number)
         transaction.commit()
 
+        self.lock = Lock()
+
     # TRANSFER --------------------------------------------------------------------------------------------------------
     def transfer(self, source: Stock, target: Stock, amount):
-        job_string = 'JOB: ' + source.get_name() + ' --(' + str(amount).zfill(3) + ')--> ' + target.get_name() + '\t ... '
+        job_string = 'JOB: ' + source.get_name() + ' --(' + str(amount).zfill(3) + ')--> ' + target.get_name() \
+                     + '\t ... '
 
         try:
             self.do_transfer(source, target, amount)
-            print(job_string+"OK")
+            if self.debug:
+                print(job_string + "OK\n", end="")
         except (MaterialNotAvailableError, SpaceNotAvailableError, GeneralError, NotImplementedError) as error:
-            print(job_string+"ERROR: " + error.args[0])
+            if self.debug:
+                print(job_string + "ERROR: " + error.args[0] + "\n", end="")
         except HandledError as error:
-            print(job_string+"SUPPRESSED: " + error.args[0])
+            if self.debug:
+                print(job_string + "SUPPRESSED: " + error.args[0] + "\n", end="")
 
     @abstractmethod
     def do_transfer(self, source: Stock, target: Stock, amount):
@@ -41,16 +50,18 @@ class WMS(ABC):
 
     # INCOMING --------------------------------------------------------------------------------------------------------
     def incoming(self, target: Stock, amount):
-        print('JOB: 	 EXTERNAL --(' + str(amount).zfill(3) + ')--> ' + target.get_name(), end="\t ... ")
+        job_string = 'JOB: 	 EXTERNAL --(' + str(amount).zfill(3) + ')--> ' + target.get_name() + '\t ... '
 
         try:
-            self.dm['total_incoming'] = self.dm['total_incoming'] + amount
             self.do_incoming(target, amount)
-            print("OK")
+            if self.debug:
+                print(job_string + "OK" + "\n", end="")
         except (MaterialNotAvailableError, SpaceNotAvailableError, GeneralError, NotImplementedError) as error:
-            print("ERROR: " + error.args[0])
+            if self.debug:
+                print(job_string + "ERROR: " + error.args[0] + "\n", end="")
         except HandledError as error:
-            print("SUPPRESSED: " + error.args[0])
+            if self.debug:
+                print(job_string + "SUPPRESSED: " + error.args[0] + "\n", end="")
 
     @abstractmethod
     def do_incoming(self, target, amount):
@@ -58,16 +69,18 @@ class WMS(ABC):
 
     # OUTGOING --------------------------------------------------------------------------------------------------------
     def outgoing(self, source: Stock, amount):
-        print('JOB: ' + source.get_name() + ' --(' + str(amount).zfill(3) + ')--> EXTERNAL	 ', end="\t ... ")
+        job_string = 'JOB: ' + source.get_name() + ' --(' + str(amount).zfill(3) + ')--> EXTERNAL	 ' + "\t ... "
 
         try:
-            self.dm['total_outgoing'] = self.dm['total_outgoing'] + amount
             self.do_outgoing(source, amount)
-            print("OK")
+            if self.debug:
+                print(job_string + "OK" + "\n", end="")
         except (MaterialNotAvailableError, SpaceNotAvailableError, GeneralError, NotImplementedError) as error:
-            print("ERROR: " + error.args[0])
+            if self.debug:
+                print(job_string + "ERROR: " + error.args[0] + "\n", end="")
         except HandledError as error:
-            print("SUPPRESSED: " + error.args[0])
+            if self.debug:
+                print(job_string + "SUPPRESSED: " + error.args[0] + "\n", end="")
 
     @abstractmethod
     def do_outgoing(self, source, amount):
@@ -176,15 +189,17 @@ class WMSSimple(WMS):
     def do_incoming(self, target, amount):
         # TODO: Implement a check-in of incoming goods
         raise NotImplementedError("Not implemented")
+        self.dm['total_incoming'] = self.dm['total_incoming'] + amount
         pass
 
     def do_outgoing(self, source, amount):
         # TODO: Implement a check-out of outgoing goods
         raise NotImplementedError("Not implemented")
+        self.dm['total_outgoing'] = self.dm['total_outgoing'] + amount
         pass
 
 
-# Simples WMS with transactions
+# Simple WMS with transactions
 class WMSTransactions(WMS):
     def do_transfer(self, source: Stock, target: Stock, amount):
         try:
@@ -199,6 +214,7 @@ class WMSTransactions(WMS):
         try:
             # TODO: Implement a check-in of incoming goods and a commit of the transactions upon success
             raise NotImplementedError("Not implemented")
+            self.dm['total_incoming'] = self.dm['total_incoming'] + amount
             pass
         except Exception as error:
             # TODO: Implement an abort of the transactions upon success
@@ -208,6 +224,39 @@ class WMSTransactions(WMS):
         try:
             # TODO: Implement a check-out of outgoing goods and a commit of the transactions upon success
             raise NotImplementedError("Not implemented")
+            self.dm['total_outgoing'] = self.dm['total_outgoing'] + amount
+            pass
+        except Exception as error:
+            # TODO: Implement an abort of the transactions upon success
+            raise HandledError(error.args[0])
+
+
+# Simple WMS mit transactions und Locks
+class WMSTransactionsLocks(WMS):
+    def do_transfer(self, source: Stock, target: Stock, amount):
+        try:
+            # TODO: Implement functions to realize a transfer of goods and a commit of the transactions upon success
+            raise NotImplementedError("Not implemented")
+            pass
+        except Exception as error:
+            # TODO: Implement an abort of the transactions upon success
+            raise HandledError(error.args[0])
+
+    def do_incoming(self, target, amount):
+        try:
+            # TODO: Implement a check-in of incoming goods and a commit of the transactions upon success
+            raise NotImplementedError("Not implemented")
+            self.dm['total_incoming'] = self.dm['total_incoming'] + amount
+            pass
+        except Exception as error:
+            # TODO: Implement an abort of the transactions upon success
+            raise HandledError(error.args[0])
+
+    def do_outgoing(self, source, amount):
+        try:
+            # TODO: Implement a check-out of outgoing goods and a commit of the transactions upon success
+            raise NotImplementedError("Not implemented")
+            self.dm['total_outgoing'] = self.dm['total_outgoing'] + amount
             pass
         except Exception as error:
             # TODO: Implement an abort of the transactions upon success

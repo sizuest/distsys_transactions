@@ -1,20 +1,16 @@
-import transaction
 import threading
-from wms_solution import WMS, WMSTransactions
+import transaction
 
-
-def run_random_operations(wms: WMS, num_transactions, max_elemetns):
-    wms.random_operations(num_transactions, max_elemetns)
-
+from wms_solution import WMSTransactions, WMSTransactionsLocks
 
 if __name__ == '__main__':
 
     savepoint = transaction.savepoint()
 
-    NUMBER_OF_TRANSACTIONS = 100
-    NUMBER_OF_WAREHOUSES = 10
-    NUMBER_OF_POSITIONS = 10
-    NUMBER_OF_THREADS = 100
+    NUMBER_OF_TRANSACTIONS = 1000
+    NUMBER_OF_WAREHOUSES = 5
+    NUMBER_OF_POSITIONS = 20
+    NUMBER_OF_THREADS = 10
 
     wms_transactions = WMSTransactions(NUMBER_OF_WAREHOUSES, NUMBER_OF_POSITIONS)
     print('\n==============================================================================')
@@ -24,20 +20,39 @@ if __name__ == '__main__':
     # Run simulation
     ops_threads = []
     for i in range(0, NUMBER_OF_THREADS):
-        ops_thread = threading.Thread(target=run_random_operations, args=(wms_transactions, NUMBER_OF_TRANSACTIONS, 50))
+        ops_thread = threading.Thread(target=wms_transactions.random_operations, args=(NUMBER_OF_TRANSACTIONS, 50))
         ops_thread.start()
         ops_threads.append(ops_thread)
 
     for t in ops_threads:
         t.join()
 
-    print('\n')
-    print('INITIAL CONTENT: %6.0f' % (initial_content) + '\n')
+    print('INITIAL CONTENT: %6.0f' % initial_content + '\n')
     print('FINAL CONTENT:   %6.0f' % wms_transactions.get_count())
     print('in:              %6.0f' % wms_transactions.get_incoming())
     print('out:             %6.0f' % wms_transactions.get_outgoing())
     print('-------------------------')
     print('Balance:         %6.0f' % wms_transactions.get_total_count())
 
-    
+    wms_transactions_locks = WMSTransactionsLocks(NUMBER_OF_WAREHOUSES, NUMBER_OF_POSITIONS)
+    print('\n==============================================================================')
+    print('SIMULATION 4: With Transaction Manager and Locks')
+    print('==============================================================================\n')
+    initial_content = wms_transactions_locks.get_count()
+    # Run simulation
+    ops_threads = []
+    for i in range(0, NUMBER_OF_THREADS):
+        ops_thread = threading.Thread(target=wms_transactions_locks.random_operations,
+                                      args=(NUMBER_OF_TRANSACTIONS, 50))
+        ops_thread.start()
+        ops_threads.append(ops_thread)
 
+    for t in ops_threads:
+        t.join()
+
+    print('INITIAL CONTENT: %6.0f' % initial_content + '\n')
+    print('FINAL CONTENT:   %6.0f' % wms_transactions_locks.get_count())
+    print('in:              %6.0f' % wms_transactions_locks.get_incoming())
+    print('out:             %6.0f' % wms_transactions_locks.get_outgoing())
+    print('-------------------------')
+    print('Balance:         %6.0f' % wms_transactions_locks.get_total_count())

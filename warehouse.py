@@ -25,37 +25,31 @@ class Warehouse:
 class Stock:
 
     def __init__(self, pos_name, dm, max_content, init_content=0):
+        from threading import Lock
+
         self.pos_name = pos_name
         self.dm = dm
         self.dm[self.pos_name] = init_content
         self.max_content = max_content
+        self.lock = Lock()
 
     def get_count(self):
         return self.dm[self.pos_name]
 
-    def put(self, c):
+    def set(self, c):
         if ERROR_PROBABILITY > random():
             raise GeneralError(self.pos_name + ': ' + 'Unknown error!')
 
         # Check, if space is available
-        if self.dm[self.pos_name] + c > self.max_content:
+        if c > self.max_content:
             raise SpaceNotAvailableError(self.pos_name + ': ' + 'Space not available, available ' +
                                          str(self.max_content - self.dm[self.pos_name]) +
                                          ', required ' + str(c) + '!')
 
-        self.dm[self.pos_name] = self.dm[self.pos_name] + c
+        if c < 0:
+            raise SpaceNotAvailableError(self.pos_name + ': ' + 'Content can''t be negative!')
 
-    def pick(self, c):
-        if ERROR_PROBABILITY > random():
-            raise GeneralError(self.pos_name + ': ' + 'Unknown error!')
-
-        # Check, if material is available
-        if self.dm[self.pos_name] < c:
-            raise MaterialNotAvailableError(
-                self.pos_name + ': ' + 'Material not available, available ' + str(self.dm[self.pos_name]) +
-                ', required ' + str(c) + '!')
-
-        self.dm[self.pos_name] = self.dm[self.pos_name] - c
+        self.dm[self.pos_name] = c
 
     def get_name(self):
         return self.pos_name
