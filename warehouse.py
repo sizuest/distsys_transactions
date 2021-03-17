@@ -75,3 +75,7 @@ class SpaceNotAvailableError(Error):
 
 class GeneralError(Error):
     pass
+
+
+class NotImplementedError(Error):
+    pass

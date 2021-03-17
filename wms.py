@@ -21,15 +21,15 @@ class WMS(ABC):
 
     # TRANSFER --------------------------------------------------------------------------------------------------------
     def transfer(self, source: Stock, target: Stock, amount):
-        print('JOB: ' + source.get_name() + ' --(' + str(amount).zfill(3) + ')--> ' + target.get_name(), end="\t ... ")
+        job_string = 'JOB: ' + source.get_name() + ' --(' + str(amount).zfill(3) + ')--> ' + target.get_name() + '\t ... '
 
         try:
             self.do_transfer(source, target, amount)
-            print("OK")
-        except (MaterialNotAvailableError, SpaceNotAvailableError, GeneralError) as error:
-            print("ERROR: " + error.args[0])
+            print(job_string+"OK")
+        except (MaterialNotAvailableError, SpaceNotAvailableError, GeneralError, NotImplementedError) as error:
+            print(job_string+"ERROR: " + error.args[0])
         except HandledError as error:
-            print("SUPPRESSED: " + error.args[0])
+            print(job_string+"SUPPRESSED: " + error.args[0])
 
     @abstractmethod
     def do_transfer(self, source: Stock, target: Stock, amount):
@@ -47,7 +47,7 @@ class WMS(ABC):
             self.dm['total_incoming'] = self.dm['total_incoming'] + amount
             self.do_incoming(target, amount)
             print("OK")
-        except (MaterialNotAvailableError, SpaceNotAvailableError, GeneralError) as error:
+        except (MaterialNotAvailableError, SpaceNotAvailableError, GeneralError, NotImplementedError) as error:
             print("ERROR: " + error.args[0])
         except HandledError as error:
             print("SUPPRESSED: " + error.args[0])
@@ -64,7 +64,7 @@ class WMS(ABC):
             self.dm['total_outgoing'] = self.dm['total_outgoing'] + amount
             self.do_outgoing(source, amount)
             print("OK")
-        except (MaterialNotAvailableError, SpaceNotAvailableError, GeneralError) as error:
+        except (MaterialNotAvailableError, SpaceNotAvailableError, GeneralError, NotImplementedError) as error:
             print("ERROR: " + error.args[0])
         except HandledError as error:
             print("SUPPRESSED: " + error.args[0])
@@ -166,26 +166,30 @@ class HandledError(Exception):
 
 
 # Simple WMS without transactions
-class ERPSimple(WMS):
+class WMSSimple(WMS):
 
     def do_transfer(self, source: Stock, target: Stock, amount):
         # TODO: Implement functions to realize a transfer of goods
+        raise NotImplementedError("Not implemented")
         pass
 
     def do_incoming(self, target, amount):
         # TODO: Implement a check-in of incoming goods
+        raise NotImplementedError("Not implemented")
         pass
 
     def do_outgoing(self, source, amount):
         # TODO: Implement a check-out of outgoing goods
+        raise NotImplementedError("Not implemented")
         pass
 
 
 # Simples WMS with transactions
-class ERPTransactions(WMS):
+class WMSTransactions(WMS):
     def do_transfer(self, source: Stock, target: Stock, amount):
         try:
             # TODO: Implement functions to realize a transfer of goods and a commit of the transactions upon success
+            raise NotImplementedError("Not implemented")
             pass
         except Exception as error:
             # TODO: Implement an abort of the transactions upon success
@@ -194,6 +198,7 @@ class ERPTransactions(WMS):
     def do_incoming(self, target, amount):
         try:
             # TODO: Implement a check-in of incoming goods and a commit of the transactions upon success
+            raise NotImplementedError("Not implemented")
             pass
         except Exception as error:
             # TODO: Implement an abort of the transactions upon success
@@ -202,6 +207,7 @@ class ERPTransactions(WMS):
     def do_outgoing(self, source, amount):
         try:
             # TODO: Implement a check-out of outgoing goods and a commit of the transactions upon success
+            raise NotImplementedError("Not implemented")
             pass
         except Exception as error:
             # TODO: Implement an abort of the transactions upon success
