@@ -232,32 +232,15 @@ class WMSTransactions(WMS):
 
 
 # Simple WMS mit transactions und Locks
-class WMSTransactionsLocks(WMS):
+class WMSTransactionsLocks(WMSTransactions):
     def do_transfer(self, source: Stock, target: Stock, amount):
-        try:
-            # TODO: Implement functions to realize a transfer of goods and a commit of the transactions upon success
-            raise NotImplementedError("Not implemented")
-            pass
-        except Exception as error:
-            # TODO: Implement an abort of the transactions upon success
-            raise HandledError(error.args[0])
+        # TODO: Use the lock to call the function
+        super().do_transfer(source, target, amount)
 
     def do_incoming(self, target, amount):
-        try:
-            # TODO: Implement a check-in of incoming goods and a commit of the transactions upon success
-            raise NotImplementedError("Not implemented")
-            self.dm['total_incoming'] = self.dm['total_incoming'] + amount
-            pass
-        except Exception as error:
-            # TODO: Implement an abort of the transactions upon success
-            raise HandledError(error.args[0])
+        # TODO: Use the lock to call the function
+        super().do_incoming(target, amount)
 
     def do_outgoing(self, source, amount):
-        try:
-            # TODO: Implement a check-out of outgoing goods and a commit of the transactions upon success
-            raise NotImplementedError("Not implemented")
-            self.dm['total_outgoing'] = self.dm['total_outgoing'] + amount
-            pass
-        except Exception as error:
-            # TODO: Implement an abort of the transactions upon success
-            raise HandledError(error.args[0])
+        # TODO: Use the lock to call the function
+        super().do_outgoing(source, amount)
