@@ -26,7 +26,8 @@ class WMS(ABC):
 
     # TRANSFER --------------------------------------------------------------------------------------------------------
     def transfer(self, source: Stock, target: Stock, amount):
-        job_string = 'JOB: ' + source.get_name() + ' --(' + str(amount).zfill(3) + ')--> ' + target.get_name() + '\t ... '
+        job_string = 'JOB: ' + source.get_name() + ' --(' + str(amount).zfill(3) + ')--> ' + target.get_name() \
+                     + '\t ... '
 
         try:
             self.do_transfer(source, target, amount)
@@ -55,7 +56,7 @@ class WMS(ABC):
             self.do_incoming(target, amount)
             if self.debug:
                 print(job_string + "OK" + "\n", end="")
-        except (MaterialNotAvailableError, SpaceNotAvailableError, GeneralError) as error:
+        except (MaterialNotAvailableError, SpaceNotAvailableError, GeneralError, NotImplementedError) as error:
             if self.debug:
                 print(job_string + "ERROR: " + error.args[0] + "\n", end="")
         except HandledError as error:
@@ -74,7 +75,7 @@ class WMS(ABC):
             self.do_outgoing(source, amount)
             if self.debug:
                 print(job_string + "OK" + "\n", end="")
-        except (MaterialNotAvailableError, SpaceNotAvailableError, GeneralError) as error:
+        except (MaterialNotAvailableError, SpaceNotAvailableError, GeneralError, NotImplementedError) as error:
             if self.debug:
                 print(job_string + "ERROR: " + error.args[0] + "\n", end="")
         except HandledError as error:
@@ -181,54 +182,54 @@ class HandledError(Exception):
 class WMSSimple(WMS):
 
     def do_transfer(self, source: Stock, target: Stock, amount):
-        target_content = target.get_count()
-        source_content = source.get_count()
-        target.set(target_content + amount)
-        source.set(source_content - amount)
+        # TODO: Implement functions to realize a transfer of goods
+        raise NotImplementedError("Not implemented")
+        pass
 
     def do_incoming(self, target, amount):
-        target_content = target.get_count()
-        target.set(target_content + amount)
+        # TODO: Implement a check-in of incoming goods
+        raise NotImplementedError("Not implemented")
         self.dm['total_incoming'] = self.dm['total_incoming'] + amount
+        pass
 
     def do_outgoing(self, source, amount):
-        source_content = source.get_count()
-        source.set(source_content - amount)
+        # TODO: Implement a check-out of outgoing goods
+        raise NotImplementedError("Not implemented")
         self.dm['total_outgoing'] = self.dm['total_outgoing'] + amount
+        pass
 
 
-# Simples WMS with transactions
+# Simple WMS with transactions
 class WMSTransactions(WMS):
     def do_transfer(self, source: Stock, target: Stock, amount):
         try:
-            target_content = target.get_count()
-            source_content = source.get_count()
-            target.set(target_content + amount)
-            source.set(source_content - amount)
-            transaction.commit()
+            # TODO: Implement functions to realize a transfer of goods and a commit of the transactions upon success
+            raise NotImplementedError("Not implemented")
+            pass
         except Exception as error:
-            transaction.abort()
+            # TODO: Implement an abort of the transactions upon success
             raise HandledError(error.args[0])
 
     def do_incoming(self, target, amount):
         try:
-            target_content = target.get_count()
-            target.set(target_content + amount)
+            # TODO: Implement a check-in of incoming goods and a commit of the transactions upon success
+            raise NotImplementedError("Not implemented")
             self.dm['total_incoming'] = self.dm['total_incoming'] + amount
-            transaction.commit()
+            pass
         except Exception as error:
-            transaction.abort()
+            # TODO: Implement an abort of the transactions upon success
             raise HandledError(error.args[0])
 
     def do_outgoing(self, source, amount):
         try:
-            source_content = source.get_count()
-            source.set(source_content - amount)
+            # TODO: Implement a check-out of outgoing goods and a commit of the transactions upon success
+            raise NotImplementedError("Not implemented")
             self.dm['total_outgoing'] = self.dm['total_outgoing'] + amount
-            transaction.commit()
+            pass
         except Exception as error:
-            transaction.abort()
+            # TODO: Implement an abort of the transactions upon success
             raise HandledError(error.args[0])
+
 
 # Simple WMS mit transactions und Locks
 class WMSTransactionsLocks(WMSTransactions):
